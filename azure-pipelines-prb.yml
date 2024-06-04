@@ -1,0 +1,9 @@
+resources:
+ repositories:
+   - repository: pipeline-service-claims-api
+     type: git
+     name: DevSecOps-Middleware/pipeline-service-claims-api
+     ref: refs/heads/main
+
+extends:
+  template: 'principal-pipelines/azure-pipelines-prb.yml@pipeline-service-claims-api'
