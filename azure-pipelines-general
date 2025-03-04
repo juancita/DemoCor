@@ -1,0 +1,12 @@
+pool:
+  vmImage: 'windows-latest'
+
+resources:
+ repositories:
+   - repository: sharedLibrary-template-general-periferia
+     type: git
+     name: DevSecOps/sharedLibrary-template-general-periferia
+     ref: refs/heads/develop
+
+extends:
+  template: cicd-template-demo-service-claims-api.yml@sharedLibrary-template-general-periferia
