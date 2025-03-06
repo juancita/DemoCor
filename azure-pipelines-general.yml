@@ -10,5 +10,10 @@ resources:
      endpoint: Demo-Api-testing-claims
      clean: true
 
+steps:
+  - checkout: DemoApiTesting  # Clona el repo antes de usarlo
+  - script: ls -R  # Lista todos los archivos para verificar si están disponibles
+
+
 extends:
   template: 'azure-pipelines.yml@DemoApiTesting'
