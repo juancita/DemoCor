@@ -3,11 +3,11 @@ pool:
 
 resources:
  repositories:
-   - repository: DemoApiTesting
+   - repository: Demo-Api-testing
      type: git
      name: DevSecOps/Demo-Api-testing
      ref: refs/heads/main
      endpoint: Demo-Api-testing-claims
 
 extends:
-  template: 'azure-pipelines.yml@DemoApiTesting'
+  template: 'azure-pipelines.yml@Demo-Api-testing'
