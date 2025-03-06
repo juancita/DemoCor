@@ -10,4 +10,4 @@ resources:
      endpoint: Demo-Api-testing-claims
 
 extends:
-  template: azure-pipelines.yml@DemoApiTesting
+  template: 'azure-pipelines.yml@DemoApiTesting'
