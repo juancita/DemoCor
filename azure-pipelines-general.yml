@@ -2,16 +2,12 @@ pool:
   vmImage: 'windows-latest'
 
 resources:
-  repositories:
-    - repository: DemoApiTesting
-      type: git
-      name: DevSecOps/Demo-Api-testing
-      ref: main  # <-- Se cambió de 'refs/heads/main' a 'main'
-      clean: true  # <-- Se fuerza a obtener siempre la última versión
-
-steps:
-  - checkout: DemoApiTesting  # <-- Se clona el repo antes de usarlo
-  - script: ls -R  # <-- Se listan los archivos para verificar si están accesibles
+ repositories:
+   - repository: DemoApiTesting
+     type: git
+     name: DevSecOps/Demo-Api-testing
+     ref: refs/heads/main
+     endpoint: Demo-Api-testing-claims
 
 extends:
-  template: azure-pipelines.yml@DemoApiTesting  # <-- Se mantiene la referencia al pipeline general
+  template: 'azure-pipelines.yml@DemoApiTesting'
