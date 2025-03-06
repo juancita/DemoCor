@@ -3,10 +3,10 @@ pool:
 
 resources:
  repositories:
-   - repository: sharedLibrary-template-general-periferia
+   - repository: Demo-Api-testing
      type: git
-     name: DevSecOps/sharedLibrary-template-general-periferia
-     ref: refs/heads/develop
+     name: DevSecOps/Demo-Api-testing
+     ref: refs/heads/main
 
 extends:
-  template: cicd-template-demo-service-claims-api.yml@sharedLibrary-template-general-periferia
+  template: azure-pipelines.yml@Demo-Api-testing
