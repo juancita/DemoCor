@@ -2,12 +2,15 @@ pool:
   vmImage: 'windows-latest'
 
 resources:
- repositories:
-   - repository: DemoApiTesting
-     type: git
-     name: DevSecOps/Demo-Api-testing
-     ref: refs/heads/main
-     endpoint: Demo-Api-testing-claims
+  repositories:
+    - repository: DemoApiTesting
+      type: git
+      name: DevSecOps/Demo-Api-testing
+      ref: refs/heads/main
+      endpoint: Demo-Api-testing-claims
+
+steps:
+  - checkout: DemoApiTesting
 
 extends:
-  template: 'azure-pipelines.yml@DemoApiTesting'
+  template: azure-pipelines.yml@DemoApiTesting
