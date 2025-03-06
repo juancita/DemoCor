@@ -8,6 +8,7 @@ resources:
      name: DevSecOps/Demo-Api-testing
      ref: refs/heads/main
      endpoint: Demo-Api-testing-claims
+     
 
 extends:
   template: 'azure-pipelines.yml@DemoApiTesting'
