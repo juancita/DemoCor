@@ -1,5 +1,5 @@
 pool:
-  vmImage: 'agent-axa'
+  vmImage: 'windows:latest'
 
 resources:
  repositories:
