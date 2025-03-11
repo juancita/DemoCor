@@ -3,13 +3,13 @@ pool:
 
 resources:
  repositories:
-   - repository: DemoApiTesting
+   - repository: azure-pipelines-democorporativo.yml
      type: git
-     name: DevSecOps/Demo-Api-testing
+     name: DevSecOps/azure-pipelines-democorporativo.yml
      ref: refs/heads/main
      endpoint: Demo-Api-testing-claims
     
      
 
 extends:
-  template: 'azure-pipelines.yml@DemoApiTesting'
+  template: 'azure-pipelines-democorporativo.yml@periferiait-template-pipeline'
