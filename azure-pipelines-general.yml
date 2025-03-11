@@ -7,7 +7,7 @@ resources:
      type: git
      name: DevSecOps/azure-pipelines-democorporativo.yml
      ref: refs/heads/develop
-     #endpoint: Demo-Api-testing-claims
+     endpoint: Demo-Api-testing-claims
     
      
 
