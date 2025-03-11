@@ -2,14 +2,12 @@ pool:
   name: 'agent-axa'
 
 resources:
- repositories:
-   - repository: azure-pipelines-democorporativo.yml
-     type: git
-     name: DevSecOps/azure-pipelines-democorporativo.yml
-     ref: refs/heads/develop
-     endpoint: Demo-Api-testing-claims
-    
-     
+  repositories:
+    - repository: periferiait-template-pipeline  # Alias del repo
+      type: git
+      name: DevSecOps/periferiait-template-pipeline  # Nombre del repo en Azure DevOps
+      ref: refs/heads/develop
+      endpoint: Demo-Api-testing-claims
 
 extends:
   template: 'azure-pipelines-democorporativo.yml@periferiait-template-pipeline'
