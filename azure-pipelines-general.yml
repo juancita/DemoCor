@@ -1,13 +1,141 @@
 pool:
   name: 'AXA COLPATRIA_WebSite'
 
-resources:
-  repositories:
-    - repository: periferiait-template-pipeline  # Alias del repo
-      type: git
-      name: DevSecOps/periferiait-template-pipeline  # Nombre del repo en Azure DevOps
-      ref: refs/heads/develop
-      endpoint: Demo-Api-testing-claims
+variables:
+  - name: 'IsMainBranch'
+    value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 
-extends:
-  template: 'azure-pipelines-democorporativo.yml@periferiait-template-pipeline'
+trigger:
+  branches:
+    include:
+      - main
+
+stages:
+- stage: 'BuildApi'
+  displayName: 'Build Api Microservice'
+  jobs:
+    - job: 'Build'
+      displayName: 'Build Job'
+      steps:
+        - template: ../steps/install-dependencies-dotnet.yml
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Build Package'
+          inputs:
+            command: 'build'
+            projects: '*.sln'
+            arguments: '--configuration Release'
+
+- stage: 'SonarQubeAnalysis'
+  displayName: 'Análisis Estático con SonarQube'
+  jobs:
+    - job: 'SonarQubeAnalysis'
+      displayName: 'SonarQube Analysis'
+      steps:
+        - task: SonarQubePrepare@6
+          inputs:
+            SonarQube: '$(SERVICE_CONECTION_SONAR)'
+            scannerMode: 'MSBuild'
+            projectKey: '$(Build.Repository.Name)'
+            projectName: '$(Build.Repository.Name)'
+            extraProperties: |
+              sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/TestResults/coverage.opencover.xml
+              sonar.qualitygate.wait=false
+              sonar.qualitygate.timeout=300
+              sonar.test.exclusions=**/*.json,**/*.yml,**/*.config
+              sonar.exclusions=**/*.json,**/*.yml,**/*.config
+              sonar.coverage.exclusions=**/*.json,**/*.yml,**/*.config
+
+        - script: |
+            echo $(SONARQUBE_SCANNER_PARAMS)
+          displayName: 'Check sonar env variable pre change'
+            
+        - powershell: |
+            $params = "$env:SONARQUBE_SCANNER_PARAMS" -replace '"sonar.branch.name":"[\w,/,-]*"\,?'
+            Write-Host "##vso[task.setvariable variable=SONARQUBE_SCANNER_PARAMS]$params"
+          displayName: 'Delete sonar branch'
+
+        - script: |
+            echo $(SONARQUBE_SCANNER_PARAMS)
+          displayName: 'Check sonar env variable post change'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Build Package'
+          inputs:
+            command: 'build'
+            projects: '*.sln' 
+            arguments: '--configuration Release'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Dotnet Test Cobertura'
+          inputs:
+            command: 'test'
+            arguments: >
+              --configuration Release
+              /p:CollectCoverage=true
+              /p:CoverletOutputFormat=cobertura
+              /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/
+              /p:Exclude='[ApiSiniestrosAxaText]*'
+            publishTestResults: false
+            projects: '*.sln'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Dotnet Test OpenCover'
+          inputs:
+            command: 'test'
+            arguments: >
+              --configuration Release
+              /p:CollectCoverage=true
+              /p:CoverletOutputFormat=opencover
+              /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/
+              /p:Exclude='[ApiSiniestrosAxaText]*'
+            publishTestResults: false
+            projects: '*.sln'
+
+        - task: SonarQubeAnalyze@6
+
+        - task: SonarQubePublish@6
+          inputs:
+            pollingTimeoutSec: '300'
+
+        - task: PublishCodeCoverageResults@2
+          displayName: 'Publish code coverage report'
+          inputs:
+            codeCoverageTool: 'Cobertura'
+            summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/coverage.cobertura.xml'
+
+- stage: 'BuildDockerImage'
+  displayName: 'Instalar y Construir Imagen Docker'
+  jobs:
+    - job: 'SetupBuild'
+      displayName: 'Instalar Docker y Compilar Imagen'
+      pool:
+        vmImage: 'ubuntu-latest'
+
+      steps:
+        # 1. Verificar instalación de Docker
+        - script: |
+            docker version
+          displayName: 'Verificar instalación de Docker'
+
+        # 2. Validar la existencia del Dockerfile
+        - script: |
+            dockerfilePath="$(Build.SourcesDirectory)/Dockerfile"
+
+            echo "Buscando Dockerfile en: $dockerfilePath"
+            if [ -f "$dockerfilePath" ]; then
+              echo "Dockerfile encontrado en: $dockerfilePath"
+              echo "##vso[task.setvariable variable=dockerfilePath]$dockerfilePath"
+            else
+              echo "Dockerfile NO encontrado en la raíz."
+              exit 1
+            fi
+          displayName: 'Validar presencia del Dockerfile'
+
+        # 3. Construir la imagen Docker usando el Dockerfile
+        - script: |
+            echo "Usando Dockerfile en: $(dockerfilePath)"
+            echo "Usando build path: $(Build.SourcesDirectory)"
+
+            docker build -t axa_colpatria_api:latest -f "$(dockerfilePath)" "$(Build.SourcesDirectory)"
+          displayName: 'Construir Imagen Docker'
